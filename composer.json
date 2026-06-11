@@ -2,6 +2,11 @@
     "name": "mohammed-asheek/dev-toolkit",
     "description": "Interactive CLI for local development tools",
     "type": "library",
+    "homepage": "https://github.com/asheek21-baaboo/dev-toolkit",
+    "support": {
+        "issues": "https://github.com/asheek21-baaboo/dev-toolkit/issues",
+        "source": "https://github.com/asheek21-baaboo/dev-toolkit"
+    },
     "require": {
         "php": "^8.1",
         "illuminate/console": "^10.0|^11.0",
@@ -15,7 +20,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "mohammed-asheek\\DevToolkit\\ToolkitServiceProvider"
+                "MyVendor\\DevToolkit\\ToolkitServiceProvider"
             ]
         }
     }
