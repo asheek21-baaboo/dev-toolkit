@@ -1,0 +1,22 @@
+{
+    "name": "mohammed-asheek/dev-toolkit",
+    "description": "Interactive CLI for local development tools",
+    "type": "library",
+    "require": {
+        "php": "^8.1",
+        "illuminate/console": "^10.0|^11.0",
+        "illuminate/support": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MyVendor\\DevToolkit\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "mohammed-asheek\\DevToolkit\\ToolkitServiceProvider"
+            ]
+        }
+    }
+}
