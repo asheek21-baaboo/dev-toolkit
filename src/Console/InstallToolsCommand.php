@@ -3,6 +3,7 @@
 namespace MyVendor\DevToolkit\Console;
 
 use Illuminate\Console\Command;
+use Symfony\Component\Process\Process;
 use function Laravel\Prompts\multiselect;
 
 class InstallToolsCommand extends Command
@@ -12,11 +13,11 @@ class InstallToolsCommand extends Command
 
     public function handle()
     {
-        // Define packages with their desired versions
+        // * lets Composer resolve the latest version compatible with the host Laravel app (11–13)
         $packages = [
-            'mallardduck/blade-lucide-icons:^1.26' => 'Blade Lucide Icons',
-            'masmerise/livewire-toaster:^2.9' => 'Livewire Toaster',
-            'mcamara/laravel-localization:^2.3' => 'Laravel Localization',
+            'mallardduck/blade-lucide-icons:*' => 'Blade Lucide Icons',
+            'masmerise/livewire-toaster:*' => 'Livewire Toaster',
+            'mcamara/laravel-localization:*' => 'Laravel Localization',
             'barryvdh/laravel-ide-helper:*' => 'Laravel IDE Helper (Dev)',
             'larastan/larastan:*' => 'Larastan (Dev)',
         ];
@@ -47,16 +48,18 @@ class InstallToolsCommand extends Command
             }
         }
 
-        // Run Composer require for regular packages
         if (!empty($regularRequires)) {
             $this->info("\n📦 Installing Regular Packages...");
-            passthru('composer require ' . implode(' ', $regularRequires));
+            if (!$this->runComposerRequire($regularRequires)) {
+                return self::FAILURE;
+            }
         }
 
-        // Run Composer require for dev packages
         if (!empty($devRequires)) {
             $this->info("\n📦 Installing Dev Packages...");
-            passthru('composer require --dev ' . implode(' ', $devRequires));
+            if (!$this->runComposerRequire($devRequires, dev: true)) {
+                return self::FAILURE;
+            }
         }
 
         $this->updateComposerScripts();
@@ -69,6 +72,50 @@ class InstallToolsCommand extends Command
         $this->setupHusky();
 
         $this->info("\n✅ Dev toolkit setup complete! You can run 'php artisan dev-toolkit:install' anytime to update.");
+
+        return self::SUCCESS;
+    }
+
+    protected function runComposerRequire(array $packages, bool $dev = false): bool
+    {
+        $command = array_merge(
+            ['composer', 'require'],
+            $dev ? ['--dev'] : [],
+            ['-W', '--no-interaction'],
+            $packages
+        );
+
+        $process = new Process($command, base_path());
+        $process->setTimeout(null);
+
+        $exitCode = $process->run(function (string $type, string $buffer) {
+            echo $buffer;
+        });
+
+        if ($exitCode !== 0) {
+            $this->error('Composer require failed.');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function runVendorBinary(string $binary, array $arguments = []): bool
+    {
+        $command = array_merge(
+            [PHP_BINARY, base_path('vendor/bin/'.$binary)],
+            $arguments
+        );
+
+        $process = new Process($command, base_path());
+        $process->setTimeout(null);
+
+        $exitCode = $process->run(function (string $type, string $buffer) {
+            echo $buffer;
+        });
+
+        return $exitCode === 0;
     }
 
     protected function updateComposerScripts()
@@ -146,10 +193,15 @@ EOT;
         }
 
         $this->info("\n📊 Generating phpstan baseline...");
-        passthru('vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon --no-interaction');
 
-        if (!file_exists($baselinePath)) {
+        if (!$this->runVendorBinary('phpstan', [
+            'analyse',
+            '--generate-baseline',
+            'phpstan-baseline.neon',
+            '--no-interaction',
+        ]) || !file_exists($baselinePath)) {
             $this->warn('Baseline generation did not create phpstan-baseline.neon.');
+
             return;
         }
 
@@ -185,8 +237,8 @@ fi
 
 # 3. Run Pint in check mode (fails if formatting needed, no auto-fix)
 echo "🔧 Checking code formatting with Pint..."
-vendor/bin/pint --dirty --test || {
-    echo "❌ Failed: Code formatting issues found. Run 'vendor/bin/pint --dirty' to fix."
+php vendor/bin/pint --dirty --test || {
+    echo "❌ Failed: Code formatting issues found. Run 'php vendor/bin/pint --dirty' to fix."
     exit 1
 }
 
@@ -200,7 +252,7 @@ vendor/bin/pint --dirty --test || {
 # fi
 
 echo "🧐 Running Larastan..."
-vendor/bin/phpstan analyse --no-interaction || {
+php vendor/bin/phpstan analyse --no-interaction || {
     echo "❌ Failed: Larastan found issues."
     exit 1
 }

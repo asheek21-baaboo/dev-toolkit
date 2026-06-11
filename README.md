@@ -85,6 +85,8 @@ You can re-run this command anytime to install additional tools or refresh confi
 | `barryvdh/laravel-ide-helper` | Dev | IDE autocompletion for Eloquent models |
 | `larastan/larastan` | Dev | Static analysis for Laravel (PHPStan) |
 
+All packages use a `*` constraint so Composer picks the latest version compatible with your Laravel version (11, 12, or 13).
+
 ### Composer scripts
 
 The installer adds these shortcuts to your project's `composer.json`:
@@ -111,26 +113,26 @@ Run analysis manually:
 ```bash
 composer phpstan
 # or
-vendor/bin/phpstan analyse
+php vendor/bin/phpstan analyse
 ```
 
 Regenerate the baseline after fixing issues or when intentionally accepting new ones:
 
 ```bash
-vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon
+php php vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon
 ```
 
 ### Husky pre-commit hook
 
 The installer always sets up [Husky](https://typicode.github.io/husky/) with a `.husky/pre-commit` hook that runs on every commit:
 
-1. **Pint** — checks formatting on dirty files (`vendor/bin/pint --dirty --test`)
-2. **Larastan** — runs static analysis (`vendor/bin/phpstan analyse`)
+1. **Pint** — checks formatting on dirty files (`php vendor/bin/pint --dirty --test`)
+2. **Larastan** — runs static analysis (`php vendor/bin/phpstan analyse`)
 
 Fix formatting issues before committing:
 
 ```bash
-vendor/bin/pint --dirty
+php vendor/bin/pint --dirty
 ```
 
 ### Skip hooks temporarily
@@ -164,7 +166,7 @@ git commit -m "Add dev toolkit setup"
 # 4. Day-to-day usage
 composer phpstan
 composer ide-helper
-vendor/bin/pint --dirty
+php vendor/bin/pint --dirty
 ```
 
 ## Prerequisites for Full Setup
