@@ -7,8 +7,8 @@ Interactive Laravel CLI for bootstrapping common development tools, Composer scr
 **Repository:** [github.com/asheek21-baaboo/dev-toolkit](https://github.com/asheek21-baaboo/dev-toolkit)
 ## Requirements
 
-- PHP 8.1+
-- Laravel 10 or 11
+- PHP 8.2+ (Laravel 13 requires PHP 8.3+)
+- Laravel 11, 12, or 13
 - [Composer](https://getcomposer.org/)
 - [Node.js](https://nodejs.org/) and npm (for Husky pre-commit hooks)
 
